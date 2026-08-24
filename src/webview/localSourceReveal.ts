@@ -24,6 +24,7 @@ export interface EditableSourceRegion {
   source: string;
   caret: number;
   image: boolean;
+  tokens: LocalSourceToken[];
 }
 
 interface LocalSourcePluginOptions {
@@ -198,20 +199,21 @@ export function editableSourceRegion(state: EditorState): EditableSourceRegion |
   const { selection } = state;
   if (selection instanceof NodeSelection && selection.node.type.name === 'image') {
     const source = imageSource(selection.node);
-    return { from: selection.from, to: selection.to, source, caret: source.length, image: true };
+    const tokens = [{ pos: selection.to, side: 100, text: source, kind: 'image' as const }];
+    return { from: selection.from, to: selection.to, source, caret: source.length, image: true, tokens };
   }
 
   const ranges = activeMarkRanges(state);
   if (ranges.length === 0) return null;
   const from = Math.min(...ranges.map((range) => range.from));
   const to = Math.max(...ranges.map((range) => range.to));
-  const tokens = ranges.flatMap((range) => {
+  const tokens: LocalSourceToken[] = ranges.flatMap((range) => {
     const markers = markMarkers(range);
     if (!markers) return [];
     const rank = markRank(range.mark.type.name);
     return [
-      { pos: range.from, side: -100 + rank, text: markers[0] },
-      { pos: range.to, side: 100 - rank, text: markers[1] },
+      { pos: range.from, side: -100 + rank, text: markers[0], kind: 'open' as const },
+      { pos: range.to, side: 100 - rank, text: markers[1], kind: 'close' as const },
     ];
   }).sort((a, b) => a.pos - b.pos || a.side - b.side);
 
@@ -232,7 +234,7 @@ export function editableSourceRegion(state: EditorState): EditableSourceRegion |
   }
   caret += textBetween(state, cursor, selection.from).length;
 
-  return { from, to, source, caret, image: false };
+  return { from, to, source, caret, image: false, tokens };
 }
 
 function parsedInlineContent(
@@ -252,64 +254,87 @@ function parsedInlineContent(
   return source ? Fragment.from(state.schema.text(source)) : Fragment.empty;
 }
 
-function editorDOM(view: EditorView, region: EditableSourceRegion, options: LocalSourcePluginOptions): HTMLElement {
-  const wrap = document.createElement('span');
-  wrap.className = 'mdw-local-source-editor-wrap' + (region.image ? ' image' : '');
-  wrap.contentEditable = 'false';
+interface EditableMarkerSession {
+  region: EditableSourceRegion;
+  options: LocalSourcePluginOptions;
+  values: string[];
+  elements: HTMLElement[];
+  view: EditorView | null;
+  finished: boolean;
+}
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'mdw-local-source-editor';
-  input.value = region.source;
-  input.spellcheck = false;
-  input.setAttribute('aria-label', 'Markdown 局部源码');
-  wrap.appendChild(input);
+function sessionSource(state: EditorState, session: EditableMarkerSession): string {
+  const { region } = session;
+  let source = '';
+  let cursor = region.from;
+  region.tokens.forEach((token, index) => {
+    source += textBetween(state, cursor, token.pos) + (session.values[index] ?? token.text);
+    cursor = token.pos;
+  });
+  return source + textBetween(state, cursor, region.to);
+}
 
-  const resize = () => {
-    input.style.width = `${Math.max(4, Math.min(80, input.value.length + 1))}ch`;
-  };
-  resize();
-  input.addEventListener('input', resize);
+function finishSession(session: EditableMarkerSession, commit: boolean, focusEditor: boolean): void {
+  if (session.finished || !session.view) return;
+  session.finished = true;
+  const view = session.view;
+  const state = view.state;
+  let tr = state.tr;
+  const source = sessionSource(state, session);
+  if (commit && source !== session.region.source) {
+    const content = parsedInlineContent(source, state, session.options.parseMarkdown);
+    tr = tr.replace(session.region.from, session.region.to, new Slice(content, 0, 0));
+    const end = Math.min(session.region.from + content.size, tr.doc.content.size);
+    tr = tr.setSelection(TextSelection.near(tr.doc.resolve(end), 1));
+  }
+  tr = tr.setMeta(localSourceRevealKey, 'suppress');
+  view.dispatch(tr);
+  if (focusEditor) queueMicrotask(() => view.focus());
+}
 
-  let finished = false;
-  const close = (commit: boolean, focusEditor: boolean) => {
-    if (finished) return;
-    finished = true;
-    const currentState = view.state as EditorState;
-    let tr = currentState.tr;
-    if (commit && input.value !== region.source) {
-      const content = parsedInlineContent(input.value, currentState, options.parseMarkdown);
-      tr = tr.replace(region.from, region.to, new Slice(content, 0, 0));
-      const end = Math.min(region.from + content.size, tr.doc.content.size);
-      tr = tr.setSelection(TextSelection.near(tr.doc.resolve(end), 1));
-    }
-    tr = tr.setMeta(localSourceRevealKey, 'suppress');
-    view.dispatch(tr);
-    if (focusEditor) queueMicrotask(() => view.focus());
-  };
+function markerDOM(
+  token: LocalSourceToken,
+  index: number,
+  session: EditableMarkerSession,
+): HTMLElement {
+  const span = document.createElement('span');
+  span.className = token.kind === 'image'
+    ? 'mdw-local-source mdw-local-source-image'
+    : 'mdw-local-source';
+  span.textContent = token.text;
+  span.contentEditable = 'true';
+  span.spellcheck = false;
+  span.setAttribute('role', 'textbox');
+  span.setAttribute('aria-label', 'Markdown 语法');
+  if (token.kind === 'image') span.title = token.text;
+  session.elements.push(span);
 
-  input.addEventListener('blur', () => close(true, false));
-  input.addEventListener('keydown', (event) => {
+  span.addEventListener('input', () => {
+    session.values[index] = span.textContent ?? '';
+  });
+  span.addEventListener('mousedown', (event) => event.stopPropagation());
+  span.addEventListener('blur', () => {
+    window.setTimeout(() => {
+      if (session.finished) return;
+      const active = document.activeElement;
+      if (active && session.elements.some((element) => element === active || element.contains(active))) return;
+      finishSession(session, true, false);
+    }, 0);
+  });
+  span.addEventListener('keydown', (event) => {
     event.stopPropagation();
     if (event.key === 'Enter') {
       event.preventDefault();
-      close(true, true);
+      finishSession(session, true, true);
     } else if (event.key === 'Escape') {
       event.preventDefault();
-      close(false, true);
+      finishSession(session, false, true);
     }
   });
-  input.addEventListener('mousedown', (event) => event.stopPropagation());
-
-  queueMicrotask(() => {
-    if (!input.isConnected || finished) return;
-    input.focus({ preventScroll: true });
-    input.setSelectionRange(region.caret, region.caret);
-  });
-  return wrap;
+  return span;
 }
 
-/** Replace the active rendered mark/image with a temporary, editable Markdown source input. */
+/** Reveal Markdown delimiters as editable inline spans while keeping the rendered content visible. */
 export function createLocalSourceRevealPlugin(options: LocalSourcePluginOptions): Plugin {
   return new Plugin({
     key: localSourceRevealKey,
@@ -341,20 +366,28 @@ export function createLocalSourceRevealPlugin(options: LocalSourcePluginOptions)
         if (pluginState?.suppressedSelection === selectionKey(state)) return DecorationSet.empty;
         const region = editableSourceRegion(state);
         if (!region) return DecorationSet.empty;
-        const hidden = region.image
-          ? Decoration.node(region.from, region.to, { class: 'mdw-local-source-hidden' })
-          : Decoration.inline(region.from, region.to, { class: 'mdw-local-source-hidden' });
-        const editor = Decoration.widget(
-          region.from,
-          (view) => editorDOM(view, region, options),
+        const session: EditableMarkerSession = {
+          region,
+          options,
+          values: region.tokens.map((token) => token.text),
+          elements: [],
+          view: null,
+          finished: false,
+        };
+        const decorations = region.tokens.map((token, index) => Decoration.widget(
+          token.pos,
+          (view) => {
+            session.view = view;
+            return markerDOM(token, index, session);
+          },
           {
-            side: -1000,
-            key: `editor:${region.from}:${region.to}:${region.source}`,
+            side: token.side,
+            key: `marker:${token.kind}:${token.pos}:${token.side}:${token.text}:${index}`,
             ignoreSelection: true,
             stopEvent: () => true,
           },
-        );
-        return DecorationSet.create(state.doc, [hidden, editor]);
+        ));
+        return DecorationSet.create(state.doc, decorations);
       },
     },
   });

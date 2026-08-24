@@ -1,4 +1,4 @@
-# MD Wiki Editor
+# MD-Editor
 
 Wiki 风格的 VS Code Markdown 编辑器插件：**WYSIWYG / 源码 / 预览** 三模式，粘贴图片自动保存到 md 同目录的 `images/` 子目录，支持 `[[Wiki 双链]]` 跳转。
 
@@ -21,7 +21,7 @@ Wiki 风格的 VS Code Markdown 编辑器插件：**WYSIWYG / 源码 / 预览** 
 ## 使用
 
 1. 打开一个 `.md` 文件；
-2. 按 `Ctrl+Alt+M`，或在命令面板执行 **MD Wiki: 打开当前 Markdown 的编辑器**；
+2. 按 `Ctrl+Alt+M`，或在命令面板执行 **MD-Editor: 打开当前 Markdown**；
 3. 顶部切换模式、使用格式化按钮（WYSIWYG 下可用），编辑内容自动保存；
 4. 直接粘贴图片体验图片自动归档。
 
@@ -57,4 +57,4 @@ npm run package   # 生产构建（minify）并打包 .vsix
 - [x] M1 骨架：命令/快捷键/Webview 加载与保存
 - [x] M2 三模式：Milkdown WYSIWYG / CodeMirror 源码 / markdown-it 预览
 - [x] M3 图片粘贴：自动存入 images/ 并插入引用（命名策略可配置）
-- [x] M4 Wiki 双链、错误处理与 `vsce` 打包（`md-wiki-editor-0.1.0.vsix`）
+- [x] M4 Wiki 双链、错误处理与 `vsce` 打包（`md-editor-0.1.0.vsix`）

@@ -101,6 +101,11 @@ function inferStyle(group: Candidate[]): OrderedListStyle | null {
 
 /** Convert unambiguous consecutive alphabetic/Roman markers to CommonMark decimal markers. */
 export function preprocessExtendedLists(source: string): string {
+  // Recover documents produced by the earlier HTML-comment marker implementation.
+  source = source.replace(
+    /\\?<!--MDWLISTSTYLE:(decimal|lower-alpha|upper-alpha|lower-roman|upper-roman)-->\s*/g,
+    (_match, style: OrderedListStyle) => `${LIST_STYLE_MARKER}${style} `
+  );
   const lines = source.split(/\r?\n/);
   const candidates: Candidate[] = [];
   let fence: { char: string; size: number } | null = null;

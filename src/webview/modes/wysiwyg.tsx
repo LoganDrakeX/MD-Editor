@@ -563,8 +563,6 @@ export interface WysiwygApi {
   jumpToHeading(level: number, text: string): void;
   /** 获取当前文档的 markdown（供"保存"按钮取实时内容，无序列化防抖延迟）。 */
   getMarkdown(): string;
-  /** 宿主确认保存成功后调用：更新"已保存基线"，脏状态复位。 */
-  markSaved(): void;
   /** 从 display:none 切回后让编辑器重新测量布局。 */
   refresh(): void;
 }
@@ -838,14 +836,8 @@ function MilkdownEditor({ content, onChange, apiRef, onStateChange }: Props) {
    * 外部内容同步（打开/磁盘变更/模式切换）触发整文档替换后，其归一化序列化结果
    * 不应写回文件。记录"替换后的序列化结果"，markdownUpdated 只有精确等于它时才抑制；
    * 用户随即的首次键入（结果不同）不会被误吞。
-   */
+  */
   const suppressSerializedRef = useRef<string | null>(null);
-  /** 外部同步（replaceAll）期间屏蔽"瞬时脏"通知（外部内容不算用户改动）。 */
-  const suppressDirtyRef = useRef(false);
-  /** 已保存基线文档（加载/外部同步/保存成功后更新）；用于判断内容是否与磁盘一致。 */
-  const baselineDocRef = useRef<any>(null);
-  /** 最近一次发给宿主的脏状态（避免重复发送）。 */
-  const lastDirtyRef = useRef<boolean | null>(null);
   const handleRef = useRef<HTMLDivElement | null>(null);
 
   /** 计算并推送光标格式状态（含去重）。供监听器与命令执行后调用。 */
@@ -862,12 +854,7 @@ function MilkdownEditor({ content, onChange, apiRef, onStateChange }: Props) {
     const sel = view.state.selection;
     const isImage = sel instanceof NodeSelection && sel.node.type.name === 'image';
     const dom = isImage ? (view.nodeDOM(sel.from) as HTMLElement | null) : null;
-    if (
-      !isImage ||
-      !dom ||
-      !(dom instanceof HTMLImageElement) ||
-      dom.classList.contains('mdw-local-source-hidden')
-    ) {
+    if (!isImage || !dom || !(dom instanceof HTMLImageElement)) {
       if (handleRef.current) handleRef.current.style.display = 'none';
       return;
     }
@@ -937,28 +924,6 @@ function MilkdownEditor({ content, onChange, apiRef, onStateChange }: Props) {
         listener,
         ...cursor,
         ...indent,
-        // 瞬时脏通知：用户击键的事务（state.apply 同步钩子）立即比较"当前文档 vs 已保存基线"，
-        // 有差异报脏、撤销回基线/保存后报净——面板标题圆点即时、且随撤销/保存正确消隐。
-        // 外部同步（replaceAll，suppressDirtyRef=true）不视为用户改动，不发通知。
-        (() => {
-          const dirtyPlugin = new Plugin({
-            key: new PluginKey('mdwDirtyNotify'),
-            state: {
-              init: () => false,
-              apply: (tr, _v, _o, newState) => {
-                if (!tr.docChanged || suppressDirtyRef.current) return true;
-                const baseline = baselineDocRef.current;
-                const dirty = baseline ? !newState.doc.eq(baseline) : false;
-                if (dirty !== lastDirtyRef.current) {
-                  lastDirtyRef.current = dirty;
-                  postMessage({ type: 'dirty', dirty });
-                }
-                return true;
-              },
-            },
-          });
-          return $prose(() => dirtyPlugin) as unknown as MilkdownPlugin;
-        })(),
       ];
       const editor = Editor.make()
         .config((ctx) => {
@@ -1209,16 +1174,6 @@ function MilkdownEditor({ content, onChange, apiRef, onStateChange }: Props) {
         });
         return md;
       },
-      // 宿主确认保存成功后调用：当前文档成为新的"已保存基线"，脏状态复位
-      markSaved: () => {
-        safe(() => {
-          editor.action((ctx) => {
-            baselineDocRef.current = ctx.get(editorViewCtx).state.doc;
-            lastDirtyRef.current = false;
-            return true;
-          });
-        });
-      },
     };
     // 编辑器就绪后立即推送一次光标格式状态（进入列表/加载后图标即时高亮）
     safe(() => {
@@ -1243,16 +1198,10 @@ function MilkdownEditor({ content, onChange, apiRef, onStateChange }: Props) {
     const editor = get();
     if (!editor) return;
     try {
-      // 整文档替换属于"外部同步"：期间屏蔽瞬时脏通知；替换后的文档成为"已保存基线"，
-      // 其归一化序列化结果不写回文件
+      // 整文档替换属于外部同步，其归一化序列化结果不写回文件。
       editor.action((ctx) => {
-        suppressDirtyRef.current = true;
         replaceAll(preprocessExtendedLists(content))(ctx);
-        suppressDirtyRef.current = false;
         const view = ctx.get(editorViewCtx);
-        // 新内容成为已保存基线，脏状态复位（否则上次会话的 lastDirtyRef 会吞掉首次脏通知）
-        baselineDocRef.current = view.state.doc;
-        lastDirtyRef.current = false;
         suppressSerializedRef.current = ctx.get(serializerCtx)(view.state.doc);
         return true;
       });

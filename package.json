@@ -1,7 +1,7 @@
 {
-  "name": "md-wiki-editor",
-  "displayName": "MD Wiki Editor",
-  "description": "Wiki 风格 Markdown 编辑器：WYSIWYG / 源码 / 预览三模式，粘贴图片自动存入 images/ 子目录。",
+  "name": "md-editor",
+  "displayName": "MD-Editor",
+  "description": "Markdown 编辑器：WYSIWYG / 源码 / 预览三模式，支持 Wiki 双链和图片粘贴。",
   "version": "0.1.0",
   "publisher": "local-dev",
   "license": "MIT",
@@ -14,19 +14,31 @@
   "main": "./dist/extension.js",
   "activationEvents": [
     "onCommand:md-editor.open",
-    "onCommand:md-editor.openDevtools"
+    "onCommand:md-editor.openDevtools",
+    "onCustomEditor:md-editor.editor"
   ],
   "contributes": {
     "commands": [
       {
         "command": "md-editor.open",
-        "title": "MD Wiki: 打开当前 Markdown 的编辑器",
+        "title": "MD-Editor: 打开当前 Markdown",
         "icon": "$(markdown)"
       },
       {
         "command": "md-editor.openDevtools",
-        "title": "MD Wiki: 打开调试控制台",
+        "title": "MD-Editor: 打开调试控制台",
         "icon": "$(debug-console)"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "md-editor.editor",
+        "displayName": "MD-Editor",
+        "selector": [
+          { "filenamePattern": "*.md" },
+          { "filenamePattern": "*.markdown" }
+        ],
+        "priority": "option"
       }
     ],
     "keybindings": [
@@ -38,7 +50,7 @@
       }
     ],
     "configuration": {
-      "title": "MD Wiki Editor",
+      "title": "MD-Editor",
       "properties": {
         "mdEditor.defaultMode": {
           "type": "string",
@@ -102,8 +114,9 @@
     "test:listsyntax": "node scripts/test-list-syntax.cjs",
     "test:local-source": "node scripts/test-local-source.cjs",
     "test:repro": "node scripts/repro-paste.cjs",
+    "test:custom-editor": "node scripts/test-custom-editor.cjs",
     "smoke": "node scripts/smoke-webview.cjs",
-    "test": "npm run test:naming && npm run test:listsyntax && npm run test:local-source && npm run test:repro && npm run smoke",
+    "test": "npm run test:naming && npm run test:listsyntax && npm run test:local-source && npm run test:repro && npm run test:custom-editor && npm run smoke",
     "build:prod": "node esbuild.js --minify",
     "package": "npm run build:prod && vsce package",
     "vscode:prepublish": "npm run build:prod"

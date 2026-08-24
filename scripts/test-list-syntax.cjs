@@ -63,6 +63,16 @@ equal(
   JSON.stringify(consumeListStyleMarker('MDWLISTSTYLE:lower-alpha Alpha first item')),
   JSON.stringify({ style: 'lower-alpha', text: 'Alpha first item' })
 );
+equal(
+  'leaked HTML marker is migrated',
+  preprocessExtendedLists('1. <!--MDWLISTSTYLE:lower-alpha-->Alpha\n2. Beta'),
+  '1. MDWLISTSTYLE:lower-alpha Alpha\n2. Beta'
+);
+equal(
+  'escaped leaked HTML marker is migrated',
+  preprocessExtendedLists('4. \\<!--MDWLISTSTYLE:upper-roman-->Four\n5. Five'),
+  '4. MDWLISTSTYLE:upper-roman Four\n5. Five'
+);
 equal('plus bullet marker is retained', bulletMarkerAt('text\n+ Item', 5), '+');
 equal('star bullet marker is retained', bulletMarkerAt('  * Item', 0), '*');
 
