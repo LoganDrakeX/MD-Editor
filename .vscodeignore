@@ -1,0 +1,17 @@
+.vscode/**
+src/**
+tsconfig.json
+esbuild.js
+node_modules/**
+.bin/**
+.corepack/**
+.npm-cache/**
+modlens-pkg/**
+*.tgz
+modlens-*.json
+方案.md
+.gitignore
+.vscodeignore
+scripts/**
+dist/webview/*.map
+dist/extension.js.map

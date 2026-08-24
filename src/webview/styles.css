@@ -1,0 +1,1355 @@
+/* ============ 主题变量（Jira 风格浅/深） ============ */
+.app {
+  color-scheme: light;
+  /* Jira 浅色 */
+  --bg: #ffffff;
+  --fg: #172b4d;
+  --muted: #5e6c84;
+  --border: #dfe1e6;
+  --toolbar-bg: #f4f5f7;
+  --accent: #0052cc;
+  --accent-fg: #ffffff;
+  --active-bg: rgba(0, 82, 204, 0.12);
+  --active-fg: #0052cc;
+  --hover: rgba(9, 30, 66, 0.08);
+  --btn-hover: #ebecf0;
+  --popover-bg: #ffffff;
+  --shadow: 0 4px 12px rgba(9, 30, 66, 0.18);
+  --input-bg: #fafbfc;
+  --code-bg: #f6f8fa;
+  --code-fg: #24292e;
+  --mono: var(--vscode-editor-font-family, 'Consolas', 'Courier New', monospace);
+}
+
+.app.mdw-dark {
+  color-scheme: dark;
+  /* Jira 深色 */
+  --bg: #161a1d;
+  --fg: #e6e6e6;
+  --muted: #9ba1a6;
+  --border: #2e3338;
+  --toolbar-bg: #1f2428;
+  --accent: #4c9aff;
+  --accent-fg: #0b0f14;
+  --active-bg: rgba(76, 154, 255, 0.18);
+  --active-fg: #6cb2ff;
+  --hover: rgba(255, 255, 255, 0.06);
+  --btn-hover: #2a3138;
+  --popover-bg: #24292f;
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --input-bg: #1b1f24;
+  --code-bg: #282c34;
+  --code-fg: #abb2bf;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--vscode-font-family, system-ui, -apple-system, sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ============ 顶部工具栏（Jira 风格） ============ */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* 移除旧的分段模式标签样式（模式改为下拉切换） */
+.mode-tabs,
+.mode-tab {
+  display: none;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fg);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background: var(--btn-hover);
+}
+
+.toolbar-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar-btn.active {
+  background: var(--active-bg);
+  color: var(--active-fg);
+}
+
+.tb-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+/* ---------- 下拉 ---------- */
+.dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.tb-dropdown-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.tb-dropdown-text {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  min-width: 150px;
+  background: var(--popover-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  padding: 4px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  padding: 6px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.dropdown-item:hover {
+  background: var(--btn-hover);
+}
+
+.dropdown-item.active {
+  background: var(--active-bg);
+  color: var(--active-fg);
+  font-weight: 600;
+}
+
+.dd-check {
+  width: 14px;
+  flex-shrink: 0;
+  color: var(--active-fg);
+  font-size: 12px;
+  visibility: hidden;
+}
+
+.dd-check.on {
+  visibility: visible;
+}
+
+.dd-label {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dd-hint {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.emoji-menu {
+  display: grid;
+  grid-template-columns: repeat(5, 30px);
+  gap: 2px;
+  min-width: auto;
+  padding: 6px;
+}
+
+.emoji-item {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.emoji-item:hover {
+  background: var(--btn-hover);
+}
+
+/* ---------- 链接/图片输入弹层 ---------- */
+.tb-popover {
+  min-width: 280px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tb-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-bg);
+  color: var(--fg);
+  padding: 6px 8px;
+  font-size: 13px;
+  outline: none;
+}
+
+.tb-input:focus {
+  border-color: var(--accent);
+}
+
+.tb-popover-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.tb-btn-primary {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-radius: 3px;
+  padding: 5px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tb-btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.tb-btn-plain {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  border-radius: 3px;
+  padding: 5px 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.tb-btn-plain:hover {
+  background: var(--btn-hover);
+}
+
+/* ---------- 同步状态 + 主题 ---------- */
+.toolbar-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 6px;
+  white-space: nowrap;
+}
+
+.save-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e5a50a;
+}
+
+.save-dot.saved {
+  background: #36b37e;
+}
+
+/* ============ 内容区：大纲 + 三模式 ============ */
+.app-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* ---------- 大纲面板 ---------- */
+.outline {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--toolbar-bg);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+  min-width: 140px;
+}
+
+.outline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px 6px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.outline-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.outline-fold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.outline-fold:hover {
+  background: var(--btn-hover);
+  color: var(--fg);
+}
+
+.outline-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.outline-close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+.outline-close:hover {
+  background: var(--btn-hover);
+  color: var(--fg);
+}
+
+.outline-body {
+  flex: 1;
+  overflow: auto;
+  padding: 6px 4px;
+}
+
+.outline-empty {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.outline-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-size: 12.5px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outline-item:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+
+/* hover 时行内代码颜色与整行统一高亮（无边框） */
+.outline-item:hover .outline-code {
+  color: var(--accent);
+}
+
+.outline-code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  background: var(--hover);
+  border-radius: 3px;
+  padding: 0 3px;
+  color: var(--fg);
+}
+
+.outline-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  z-index: 5;
+}
+
+.outline-resizer:hover {
+  background: var(--active-bg);
+}
+
+/* ============ 内容区：三模式平铺 ============ */
+.content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+}
+
+.mode-pane {
+  display: none;
+  height: 100%;
+  overflow: auto;
+}
+
+.mode-pane.active {
+  display: block;
+}
+
+/* ---------- 源码模式（CodeMirror） ---------- */
+.cm-host,
+.cm-host .cm-editor,
+.cm-host .cm-scroller {
+  height: 100%;
+}
+
+.cm-host .cm-editor {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.cm-host .cm-scroller {
+  padding: 8px 0;
+}
+
+.cm-host .cm-content {
+  padding: 8px 20px 40vh;
+  line-height: 1.6;
+}
+
+/* ============ 共享排版（WYSIWYG + 预览） ============ */
+.milkdown,
+.preview {
+  padding: 16px 20px 40vh;
+  line-height: 1.7;
+  font-size: 14px;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.milkdown {
+  position: relative;
+}
+
+.milkdown .ProseMirror {
+  outline: none;
+  /* ProseMirror 要求：否则控制台警告 + 硬换行/连续空白渲染不符合预期 */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.milkdown .ProseMirror-selectednode {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.milkdown h1,
+.milkdown h2,
+.milkdown h3,
+.milkdown h4,
+.milkdown h5,
+.milkdown h6,
+.preview h1,
+.preview h2,
+.preview h3,
+.preview h4,
+.preview h5,
+.preview h6 {
+  line-height: 1.3;
+  margin: 1.2em 0 0.5em;
+  font-weight: 600;
+}
+
+.milkdown h1,
+.preview h1 {
+  font-size: 1.9em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3em;
+}
+
+.milkdown h2,
+.preview h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3em;
+}
+
+.milkdown h3,
+.preview h3 {
+  font-size: 1.25em;
+}
+
+.milkdown p,
+.preview p {
+  margin: 0.6em 0;
+}
+
+.milkdown ul,
+.milkdown ol,
+.preview ul,
+.preview ol {
+  /* 标记区宽度（浏览器在此渲染 ● / 1. 等列表标记）；任务复选框也放进这个区，
+     使三种列表的"符号位置"一致、文字起点一致 */
+  --list-indent: 1.8em;
+  padding-left: var(--list-indent);
+  margin: 0.6em 0;
+}
+
+.milkdown li,
+.preview li {
+  margin: 0.2em 0;
+}
+
+.milkdown ol[data-list-style='lower-alpha'],
+.preview ol[data-list-style='lower-alpha'] { list-style-type: lower-alpha; }
+.milkdown ol[data-list-style='upper-alpha'],
+.preview ol[data-list-style='upper-alpha'] { list-style-type: upper-alpha; }
+.milkdown ol[data-list-style='lower-roman'],
+.preview ol[data-list-style='lower-roman'] { list-style-type: lower-roman; }
+.milkdown ol[data-list-style='upper-roman'],
+.preview ol[data-list-style='upper-roman'] { list-style-type: upper-roman; }
+
+/* 列表项段落：三种列表（无序/有序/任务）统一紧凑行距（与任务列表一致）；
+   同一项内的后续段落保留段落间距 */
+.milkdown li > p,
+.preview li > p {
+  margin: 0;
+}
+
+.milkdown li > p + p,
+.preview li > p + p {
+  margin-top: 0.6em;
+}
+
+/* 任务列表复选框（GFM：li[data-item-type="task"]，14×14 位于列表标记区：
+   left = -1×列表缩进 + 0.4em（在 1.8em 标记区内大致居中，与 ● / 1. 同位）。
+   点击勾选由 wysiwyg 的 taskCheckboxPlugin 处理，preventDefault 不让光标进入。
+   文字起点 = ul/ol 内容起点（1.8em padding 处），与无序/有序一致，切换不位移 */
+.milkdown li[data-item-type="task"] {
+  list-style: none;
+  position: relative;
+}
+
+.milkdown li[data-item-type="task"]::before {
+  content: '';
+  position: absolute;
+  left: calc(-1 * var(--list-indent, 1.8em) + 0.4em);
+  top: 0.35em;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  background: var(--popover-bg);
+}
+
+.milkdown li[data-item-type="task"][data-checked='true']::before {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M9.5 16.2l-4-4L4 13.7l5.5 5.5L20 8.7l-1.5-1.5z'/%3E%3C/svg%3E");
+  background-size: 12px 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 预览任务项：markdown-it 规则把 "[ ] / [x]" 换成只读复选框 */
+.preview li input[type='checkbox'].mdw-task-cb {
+  margin-right: 6px;
+  vertical-align: -1px;
+  accent-color: var(--accent);
+}
+
+.milkdown blockquote,
+.preview blockquote {
+  margin: 0.8em 0;
+  padding: 0.2em 1em;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+  background: var(--hover);
+}
+
+.milkdown a,
+.preview a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.milkdown a {
+  cursor: text;
+}
+
+.preview a {
+  cursor: pointer;
+}
+
+.milkdown a:hover,
+.preview a:hover {
+  text-decoration: underline;
+}
+
+.preview a.wiki-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+  padding: 0 1px;
+  border-radius: 3px;
+}
+
+.preview a.wiki-link:hover {
+  background: rgba(55, 148, 255, 0.12);
+  text-decoration: none;
+}
+
+.milkdown hr,
+.preview hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5em 0;
+}
+
+.milkdown img,
+.preview img {
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+.milkdown :not(pre) > code,
+.preview :not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--hover);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.milkdown pre,
+.preview pre {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 12px 16px;
+  border-radius: 6px;
+  overflow: auto;
+  line-height: 1.5;
+}
+
+.milkdown pre code,
+.preview pre code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: transparent;
+  padding: 0;
+}
+
+.milkdown table,
+.preview table {
+  border-collapse: collapse;
+  margin: 0.8em 0;
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* 行列选中高亮：背景由 tableEditing 原生添加的 .selectedCell 类驱动（装饰系统，安全无死循环）；
+   网格线由交互层绘制；这里防护浏览器文本选中效果。 */
+.milkdown .selectedCell {
+  position: relative;
+  z-index: 0;
+  background: var(--active-bg);
+}
+
+.milkdown .selectedCell ::selection {
+  background: transparent;
+}
+
+.milkdown th,
+.milkdown td,
+.preview th,
+.preview td {
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+}
+
+.milkdown th,
+.preview th {
+  background: var(--hover);
+  font-weight: 600;
+}
+
+.milkdown input[type='checkbox'],
+.preview input[type='checkbox'] {
+  margin-right: 6px;
+}
+
+/* ---------- 图片缩放手柄 ---------- */
+.mdw-resize-handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+  border-radius: 2px;
+  background: var(--popover-bg);
+  cursor: se-resize;
+  z-index: 60;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+/* ---------- WYSIWYG 代码块语法高亮（可编辑层 + 高亮覆盖层） ---------- */
+.mdw-codeblock {
+  position: relative;
+  margin: 0.8em 0;
+}
+
+.mdw-codeblock .mdw-codeblock-content,
+.mdw-codeblock .mdw-codeblock-overlay {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow: auto;
+}
+
+.mdw-codeblock .mdw-codeblock-content {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--fg);
+}
+
+.mdw-codeblock .mdw-codeblock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  overflow: hidden;
+}
+
+.mdw-codeblock .mdw-codeblock-overlay code {
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.mdw-codeblock .mdw-codeblock-content ::selection {
+  background: var(--active-bg);
+}
+
+/* 预览代码块容器（语言角标定位基准） */
+.preview-code-wrap {
+  position: relative;
+  margin: 0.8em 0;
+}
+
+.preview-code-wrap pre {
+  margin: 0;
+}
+
+/* 代码块语言角标（可点击弹出语言菜单） */
+.mdw-codeblock-lang {
+  position: absolute;
+  top: 3px;
+  right: 10px;
+  font-size: 10px;
+  line-height: 1;
+  font-family: var(--mono);
+  color: var(--code-fg);
+  opacity: 0.7;
+  pointer-events: auto;
+  z-index: 2;
+  cursor: pointer;
+  align-items: center;
+  padding: 3px 6px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.mdw-codeblock-lang:hover {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* 代码块语言菜单 */
+.mdw-codeblock-langmenu {
+  position: absolute;
+  top: 22px;
+  right: 10px;
+  z-index: 85;
+  display: flex;
+  flex-direction: column;
+  max-height: 260px;
+  overflow: auto;
+  min-width: 130px;
+  background: var(--popover-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  padding: 4px;
+}
+
+.mdw-codeblock-langitem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--mono);
+}
+
+.mdw-codeblock-langitem:hover {
+  background: var(--btn-hover);
+}
+
+.mdw-codeblock-langitem.active {
+  background: var(--active-bg);
+  color: var(--active-fg);
+}
+
+/* ---------- 代码高亮 token 配色（浅色/深色） ---------- */
+.app.mdw-light .hljs {
+  color: #24292e;
+}
+
+.app.mdw-light .hljs-keyword,
+.app.mdw-light .hljs-selector-tag {
+  color: #cf222e;
+}
+
+.app.mdw-light .hljs-string,
+.app.mdw-light .hljs-regexp,
+.app.mdw-light .hljs-addition {
+  color: #0a3069;
+}
+
+.app.mdw-light .hljs-number,
+.app.mdw-light .hljs-literal,
+.app.mdw-light .hljs-symbol,
+.app.mdw-light .hljs-bullet {
+  color: #0550ae;
+}
+
+.app.mdw-light .hljs-comment,
+.app.mdw-light .hljs-quote {
+  color: #6e7781;
+  font-style: italic;
+}
+
+.app.mdw-light .hljs-title,
+.app.mdw-light .hljs-title.function_,
+.app.mdw-light .hljs-section,
+.app.mdw-light .hljs-name {
+  color: #8250df;
+}
+
+.app.mdw-light .hljs-attr,
+.app.mdw-light .hljs-variable,
+.app.mdw-light .hljs-template-variable {
+  color: #953800;
+}
+
+.app.mdw-light .hljs-type,
+.app.mdw-light .hljs-built_in,
+.app.mdw-light .hljs-class .hljs-title {
+  color: #0550ae;
+}
+
+.app.mdw-light .hljs-meta,
+.app.mdw-light .hljs-meta .hljs-keyword {
+  color: #1f2328;
+}
+
+.app.mdw-light .hljs-deletion {
+  color: #82071e;
+}
+
+.app.mdw-light .hljs-strong {
+  font-weight: 700;
+}
+
+.app.mdw-light .hljs-emphasis {
+  font-style: italic;
+}
+
+.app.mdw-dark .hljs {
+  color: #abb2bf;
+}
+
+.app.mdw-dark .hljs-keyword,
+.app.mdw-dark .hljs-selector-tag {
+  color: #c678dd;
+}
+
+.app.mdw-dark .hljs-string,
+.app.mdw-dark .hljs-regexp,
+.app.mdw-dark .hljs-addition {
+  color: #98c379;
+}
+
+.app.mdw-dark .hljs-number,
+.app.mdw-dark .hljs-literal,
+.app.mdw-dark .hljs-symbol,
+.app.mdw-dark .hljs-bullet {
+  color: #d19a66;
+}
+
+.app.mdw-dark .hljs-comment,
+.app.mdw-dark .hljs-quote {
+  color: #7f848e;
+  font-style: italic;
+}
+
+.app.mdw-dark .hljs-title,
+.app.mdw-dark .hljs-title.function_,
+.app.mdw-dark .hljs-section,
+.app.mdw-dark .hljs-name {
+  color: #61afef;
+}
+
+.app.mdw-dark .hljs-attr,
+.app.mdw-dark .hljs-variable,
+.app.mdw-dark .hljs-template-variable {
+  color: #e06c75;
+}
+
+.app.mdw-dark .hljs-type,
+.app.mdw-dark .hljs-built_in,
+.app.mdw-dark .hljs-class .hljs-title {
+  color: #e6c07b;
+}
+
+.app.mdw-dark .hljs-meta,
+.app.mdw-dark .hljs-meta .hljs-keyword {
+  color: #61afef;
+}
+
+.app.mdw-dark .hljs-deletion {
+  color: #e06c75;
+}
+
+.app.mdw-dark .hljs-strong {
+  font-weight: 700;
+}
+
+.app.mdw-dark .hljs-emphasis {
+  font-style: italic;
+}
+
+/* ---------- WYSIWYG 可编辑局部源码 ---------- */
+.mdw-local-source-hidden {
+  display: none !important;
+}
+
+.mdw-local-source-editor-wrap {
+  display: inline-flex;
+  max-width: 100%;
+  vertical-align: baseline;
+}
+
+.mdw-local-source-editor-wrap.image {
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+.mdw-local-source-editor {
+  box-sizing: border-box;
+  min-width: 4ch;
+  max-width: min(80ch, calc(100vw - 80px));
+  height: 1.75em;
+  margin: 0;
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 0.92em;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.4;
+  outline: none;
+}
+
+.mdw-local-source-editor:focus {
+  border-color: var(--accent);
+}
+
+/* ---------- 表格交互层（Obsidian 风格：边界加号 + 行/列手柄 + 设置菜单） ---------- */
+/* 覆盖层 absolute 挂载在编辑器宿主内（该方案实测可正常显示小点/手柄） */
+.mdw-table-gutter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 70;
+  overflow: visible;
+}
+
+/* 行/列边界加号按钮：悬停到行/列线开头即显示（+ 常显，无圆点中间态） */
+.mdw-tg-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 0 0 2px var(--popover-bg);
+  transition: transform 0.1s;
+  z-index: 6; /* 在选中网格线上方 */
+}
+
+.mdw-tg-dot::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+/* CSS 绘制的加号：像素级居中，常显 */
+.mdw-tg-dot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background:
+    linear-gradient(#ffffff, #ffffff) center / 8px 1.5px no-repeat,
+    linear-gradient(#ffffff, #ffffff) center / 1.5px 8px no-repeat;
+}
+
+.mdw-tg-dot:hover {
+  transform: scale(1.15);
+}
+
+/* 插入位置高亮线 */
+.mdw-tg-line {
+  position: absolute;
+  background: var(--accent);
+  border-radius: 1px;
+  z-index: 5;
+}
+
+.mdw-tg-line.row {
+  height: 2px;
+}
+
+.mdw-tg-line.col {
+  width: 2px;
+}
+
+/* 拖动落点指示线（更粗更亮） */
+.mdw-tg-line.drop {
+  background: var(--active-fg);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.mdw-tg-line.drop.row {
+  height: 3px;
+}
+
+.mdw-tg-line.drop.col {
+  width: 3px;
+}
+
+/* 行列选中高亮网格线（外框 + 单元格间线，单线 1px）——最低层 */
+.mdw-tg-sel-line {
+  position: absolute;
+  background: var(--accent);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.mdw-tg-sel-line.v {
+  width: 1px;
+}
+
+.mdw-tg-sel-line.h {
+  height: 1px;
+}
+
+/* 行/列 6 点手柄：行头竖排 2+2+2，列头横排 3+3（扩大命中区） */
+.mdw-tg-handle {
+  position: absolute;
+  border-radius: 4px;
+  background: var(--popover-bg);
+  background-clip: border-box;
+  opacity: 1;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  pointer-events: auto;
+  z-index: 7; /* 最高层：纯色背景不被选中网格线穿透 */
+}
+
+.mdw-tg-handle::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.mdw-tg-handle.row {
+  width: 14px;
+  height: 20px;
+}
+
+.mdw-tg-handle.col {
+  width: 20px;
+  height: 14px;
+}
+
+/* 2 列 × 3 行 = 6 点（行头） */
+.mdw-tg-handle.row::before {
+  content: '';
+  width: 10px;
+  height: 15px;
+  background-image: radial-gradient(circle, var(--muted) 1.3px, transparent 1.5px);
+  background-size: 5px 5px;
+  background-position: 0 0;
+}
+
+/* 3 列 × 2 行 = 6 点（列头） */
+.mdw-tg-handle.col::before {
+  content: '';
+  width: 15px;
+  height: 10px;
+  background-image: radial-gradient(circle, var(--muted) 1.3px, transparent 1.5px);
+  background-size: 5px 5px;
+  background-position: 0 0;
+}
+
+.mdw-tg-handle:hover {
+  cursor: grab;
+}
+
+.mdw-tg-handle.dragging {
+  cursor: grabbing;
+}
+
+/* 点击打开菜单后的高亮（hover 不高亮）：纯色强调底 + 白点，不透明 */
+.mdw-tg-handle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.mdw-tg-handle.active::before {
+  background-image: radial-gradient(circle, #ffffff 1.3px, transparent 1.5px);
+}
+
+/* 设置菜单 */
+.mdw-tg-menu {
+  position: absolute;
+  flex-direction: column;
+  min-width: 150px;
+  background: var(--popover-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  padding: 4px;
+  z-index: 80;
+  pointer-events: auto;
+}
+
+.mdw-tg-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  padding: 6px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-family: inherit;
+}
+
+.mdw-tg-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.mdw-tg-menu-icon svg {
+  display: block;
+}
+
+.mdw-tg-menu-item:hover {
+  background: var(--btn-hover);
+  color: var(--accent);
+}
+
+.mdw-tg-menu-item:hover .mdw-tg-menu-icon {
+  color: var(--accent);
+}
+
+/* ---------- 表格行列网格选择器 ---------- */
+.table-grid-menu {
+  min-width: auto;
+  padding: 8px;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 16px);
+  grid-template-rows: repeat(6, 16px);
+  gap: 3px;
+}
+
+.tg-cell {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.tg-cell.hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.table-grid-label {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- Toast 提示 ---------- */
+.toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 70%;
+  background: var(--popover-bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none; /* 不遮挡下方点击 */
+}
+
+/* ============ 底部状态栏 ============ */
+.statusbar {
+  padding: 3px 10px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: var(--toolbar-bg);
+}

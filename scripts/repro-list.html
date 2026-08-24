@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>html,body{margin:0;padding:0}#root{min-height:100vh}</style>
+<link rel="stylesheet" href="../dist/webview/webview.css">
+</head>
+<body>
+<div id="root"></div>
+<script>
+  // 模拟 VS Code webview 宿主：记录 webview → 宿主消息
+  window.__hostMsgs = [];
+  window.__errs = [];
+  window.addEventListener('error', (e) => window.__errs.push('err: ' + (e.error && e.error.stack || e.message)));
+  window.addEventListener('unhandledrejection', (e) => window.__errs.push('rej: ' + (e.reason && e.reason.stack || e.reason)));
+  const origErr = console.error;
+  console.error = (...a) => { window.__errs.push('console: ' + a.map((x) => x && x.stack || String(x)).join(' ')); origErr.apply(console, a); };
+  window.acquireVsCodeApi = () => ({
+    postMessage: (m) => window.__hostMsgs.push(m),
+  });
+</script>
+<script src="../dist/webview/webview.js"></script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+{
+  "name": "md-wiki-editor",
+  "displayName": "MD Wiki Editor",
+  "description": "Wiki 风格 Markdown 编辑器：WYSIWYG / 源码 / 预览三模式，粘贴图片自动存入 images/ 子目录。",
+  "version": "0.1.0",
+  "publisher": "local-dev",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:md-editor.open",
+    "onCommand:md-editor.openDevtools"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "md-editor.open",
+        "title": "MD Wiki: 打开当前 Markdown 的编辑器",
+        "icon": "$(markdown)"
+      },
+      {
+        "command": "md-editor.openDevtools",
+        "title": "MD Wiki: 打开调试控制台",
+        "icon": "$(debug-console)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "md-editor.open",
+        "key": "ctrl+alt+m",
+        "mac": "cmd+alt+m",
+        "when": "editorLangId == markdown"
+      }
+    ],
+    "configuration": {
+      "title": "MD Wiki Editor",
+      "properties": {
+        "mdEditor.defaultMode": {
+          "type": "string",
+          "enum": [
+            "wysiwyg",
+            "source",
+            "preview"
+          ],
+          "default": "wysiwyg",
+          "description": "打开面板时的默认模式。"
+        },
+        "mdEditor.imageFolder": {
+          "type": "string",
+          "default": "images",
+          "description": "粘贴图片的保存子目录名（相对当前 md 文件所在目录）。"
+        },
+        "mdEditor.imageNameMode": {
+          "type": "string",
+          "enum": [
+            "original",
+            "timestamp",
+            "timestamp-original"
+          ],
+          "default": "timestamp",
+          "description": "图片文件名策略：original=保留原名，timestamp=时间戳，timestamp-original=时间戳+原名。"
+        },
+        "mdEditor.autoSaveDelay": {
+          "type": "number",
+          "default": 800,
+          "description": "内容写回文件的防抖毫秒数。"
+        },
+        "mdEditor.syncFromDisk": {
+          "type": "boolean",
+          "default": true,
+          "description": "文件在外部被修改时是否自动刷新面板。"
+        },
+        "mdEditor.splitView": {
+          "type": "boolean",
+          "default": false,
+          "description": "上编辑下预览的分屏布局（预留）。"
+        },
+        "mdEditor.enableWikiLinks": {
+          "type": "boolean",
+          "default": true,
+          "description": "渲染 [[Wiki 双链]]（M4 实现）。"
+        },
+        "mdEditor.theme": {
+          "type": "string",
+          "enum": ["auto", "light", "dark"],
+          "default": "auto",
+          "description": "界面主题：auto=跟随 VS Code，light=浅色（Jira 风格），dark=深色。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "typecheck": "tsc --noEmit",
+    "test:naming": "node scripts/test-image-naming.cjs",
+    "test:listsyntax": "node scripts/test-list-syntax.cjs",
+    "test:local-source": "node scripts/test-local-source.cjs",
+    "test:repro": "node scripts/repro-paste.cjs",
+    "smoke": "node scripts/smoke-webview.cjs",
+    "test": "npm run test:naming && npm run test:listsyntax && npm run test:local-source && npm run test:repro && npm run smoke",
+    "build:prod": "node esbuild.js --minify",
+    "package": "npm run build:prod && vsce package",
+    "vscode:prepublish": "npm run build:prod"
+  },
+  "devDependencies": {
+    "@codemirror/lang-markdown": "^6.3.1",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.36.0",
+    "@milkdown/kit": "^7.7.0",
+    "@milkdown/react": "^7.7.0",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.2.1",
+    "codemirror": "^6.0.1",
+    "esbuild": "^0.25.0",
+    "highlight.js": "^11.11.0",
+    "jsdom": "^30.0.1",
+    "markdown-it": "^14.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2"
+  }
+}

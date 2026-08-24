@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.vsix
+.bin/
+.corepack/
+.npm-cache/
+modlens-pkg/
+*.tgz
+modlens-*.json
+
+# Local machine setup containing Windows login credentials.
+enable-auto-login.bat
